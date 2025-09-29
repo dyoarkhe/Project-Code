@@ -3,7 +3,7 @@ A student with no proper background in coding 😎 <br>
 <br>
 The repository will provide the documentation of the code for the project given the 3-week timespan. <br>
 <P>
-Original Timespan <br>
+Timeline <br>
 <br>
   PROGRAMMING (OCTOBER 20, 2025 - OCTOBER 31, 2025) <br>
   -> PROGRAMMING (SEPTEMBER 22, 2025 - OCTOBER 3, 2025) <br>
