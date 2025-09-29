@@ -1,0 +1,97 @@
+// https://arduinogetstarted.com/tutorials/arduino-joystick
+// https://arduinogetstarted.com/tutorials/arduino-joystick-servo-motor
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder-servo-motor
+
+// Use Cases
+// Use analog input for sensors that provide variable voltage, such as light sensors or potentiometers.
+// Use digital input for devices like buttons or switches.
+// Use analog output (PWM) for controlling brightness or motor speed.
+// Use digital output for turning devices like LEDs on or off.
+
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>    // PCA9685 integration
+#include <ezButton.h>	// For button input
+
+Adafruit_PWNServoDriver pwm;
+
+#define NUM_SERVOS 3    // Updated to control 3 servos
+#define SERVO_MIN ;	// Missing value
+#define SERVO_MAX ;	// Missing value
+#define SERVO_DELAY 1000    // Delay in milliseconds
+
+int servoPins[NUM_SERVOS] = {0, 1, 2};	// #define SERVO_CH 0; for individual control
+
+
+
+// Joystick Module
+#define VRX_PIN  A0	// Arduino pin connected to VRX pin
+#define VRY_PIN  A1 // Arduino pin connected to VRY pin
+// Analog value from 0 to 1023
+// int xValue = 0; // To store value of the X axis
+// int yValue = 0; // To store value of the Y axis
+
+
+
+// Rotary Encoder
+#define CLK_PIN 2   // Arduino pin connected to CLK pin
+#define DT_PIN 3	// Arduino pin connected to DT pin
+#define SW_PIN 4	// Arduino pin connected to SW pin
+#define DIRECTION_CW 0   // clockwise direction
+#define DIRECTION_CCW 1  // counter-clockwise direction
+
+
+
+void setup() {
+	Serial.begin(9600);
+	Serial.println("Swashplate Servo Control");
+
+	pwm.begin();
+	pwm.setFrequency(50);	// Set the PWM frequency for the PCA9685
+
+// Initialize all servos to their minimum positions during setup
+	for (int i = 0, i < NUM_SERVOS; i++) {
+		pwm.setPWM(servoPins[i], 0, SERVO_MIN);
+	}
+
+// Joystick Module
+    // pinMode(xPin,INPUT);    // I DONT KNOW
+    // pinMode(yPin,INPUT);    // I DONT KNOW
+
+// Rotary Encoder
+	pinMode (CLK, INPUT_PULLUP);
+	pinMode (DT, INPUT_PULLUP);
+	aState
+	aLastState = digitalRead(CLK);
+
+	delay(10)
+}
+
+void loop() {
+	delay(200);
+
+// Joystick Module
+// Read analog X and Y analog values
+ 	int xValue = analogRead(VRX_PIN);
+  	int yValue = analogRead(VRY_PIN);
+
+// TEMPORARY
+	xServo.write(xAngle); // rotate servo motor 1
+ 	yServo.write(yAngle); // rotate servo motor 2
+
+	int xAngle = map(xValue, 0, 1023, 0, 180); // scale it to the servo's angle (0 to 180)
+	int yAngle = map(yValue, 0, 1023, 0, 180); // scale it to the servo's angle (0 to 180)
+// Print data to Serial Monitor on Arduino IDE
+	Serial.print("Joystick: ");
+	Serial.print(xValue);
+	Serial.print(", ");
+	Serial.print(yValue);
+	Serial.print(" => Servo Motor: ");
+	Serial.print(xAngle);
+	Serial.print("°, ");
+	Serial.print(yAngle);
+	Serial.println("°");
+
+// Rotary Encoder
+
+}
