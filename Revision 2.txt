@@ -1,0 +1,165 @@
+// https://arduinogetstarted.com/tutorials/arduino-joystick
+// https://arduinogetstarted.com/tutorials/arduino-joystick-servo-motor
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder-servo-motor
+// https://learn.adafruit.com/16-channel-pwm-servo-driver/library-reference
+// https://adafruit.github.io/Adafruit-PWM-Servo-Driver-Library/html/class_adafruit___p_w_m_servo_driver.html
+
+// Use Cases
+// Use analog input for sensors that provide variable voltage, such as light sensors or potentiometers.
+// Use digital input for devices like buttons or switches.
+// Use analog output (PWM) for controlling brightness or motor speed.
+// Use digital output for turning devices like LEDs on or off.
+
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>    // PCA9685 integration
+#include <ezButton.h>	// For button input
+
+
+
+//	>>> Adafruit PCA9685 <<<
+
+Adafruit_PWNServoDriver pwm;
+
+#define NUM_SERVOS 3    // Updated to control 3 servos
+#define SERVO_MIN ;	// IMPORTANT: Missing value
+#define SERVO_MAX ;	// IMPORTANT: Missing value
+#define SERVO_DELAY 1000    // Delay in milliseconds
+
+#define SERVO_1 0; // Defines Servo 1; Front
+#define SERVO_2 1; // Defines Servo 2; Back-Left
+#define SERVO_3 2; // Defines Servo 3; Back-Right
+
+int servoPins[NUM_SERVOS] = {0, 1, 2};	// Defines all servo into an integer
+
+
+
+//	>>> Joystick Module <<<
+
+#define VRX_PIN  A0	// Arduino pin connected to VRX pin
+#define VRY_PIN  A1 // Arduino pin connected to VRY pin
+// Analog value from 0 to 1023
+// int VRX = 0; // To store value of the X axis
+// int VRY = 0; // To store value of the Y axis
+
+
+
+//	>>> Rotary Encoder <<<
+
+#define CLK_PIN 2	// Arduino pin connected to CLK pin
+#define DT_PIN 3	// Arduino pin connected to DT pin
+#define SW_PIN 4	// Arduino pin connected to SW pin
+#define DIRECTION_CW 0   // clockwise direction
+#define DIRECTION_CCW 1  // counter-clockwise direction
+
+int counter = 0;
+int direction = DIRECTION_CW;
+int CLK_state;
+int prev_CLK_state;
+
+
+
+void setup() {
+	Serial.begin(9600);
+	Serial.println("Swashplate Servo Control");
+
+
+
+//	>>> Adafruit PCA9685 <<<
+
+	pwm.begin();
+	pwm.setFrequency(50);	// Set the PWM frequency for the PCA9685
+// Initialize all servos to their minimum positions during setup
+	for (int i = 0, i < NUM_SERVOS; i++) {
+		pwm.setPWM(servoPins[i], 0, SERVO_MIN);
+	}
+
+
+
+//	>>> Joystick Module <<<
+
+    // pinMode(xPin,INPUT);    // I DONT KNOW
+    // pinMode(yPin,INPUT);    // I DONT KNOW
+
+
+
+//	>>> Rotary Encoder <<<
+
+// Configure Rotary Encoder Pins as inputs
+	pinMode(CLK_PIN, INPUT);
+	pinMode(DT_PIN, INPUT);
+// read the initial state of the rotary encoder's CLK pin
+	prev_CLK_state = digitalRead(CLK_PIN);
+	servo.attach(SERVO_PIN);  // IMPORTANT: Modify
+ 	servo.write(0); // IMPORTANT: Modify
+
+	delay(10)
+}
+
+
+
+void loop() {
+	delay(20);
+
+//	>>> Joystick Module Input <<<
+
+// Read analog X and Y analog values
+ 	int VRX = analogRead(VRX_PIN);
+  	int VRY = analogRead(VRY_PIN);
+// === Swashplate Mixing ===
+	int ServoF = 90 + tiltY + counter;
+	int ServoL = 90 - tiltY / 2 - tiltX + counter;
+	int ServoR = 90 - tiltY / 2 + tiltX + counter;
+// === Write Servos ===
+	setServo(SERVO_1, ServoF);
+	setServo(SERVO_2, ServoL);
+	setServo(SERVO_3, ServoR);
+// Debugging
+	Serial.print("Front: "); Serial.print(frontServo);
+	Serial.print(" | BackL: "); Serial.print(backLServo);
+	Serial.print(" | BackR: "); Serial.print(backRServo);
+	Serial.println(" | Collective: "); Serial.println(collectiveOffset);
+
+
+
+//	>>> Rotary Encoder Input <<<
+
+// Read the current state of the rotary encoder's CLK pin
+	CLK_state = digitalRead(CLK_PIN);
+
+// If the state of CLK is changed, then pulse occurred
+// React to only the rising edge (from LOW to HIGH) to avoid double count
+	if (CLK_state != prev_CLK_state && CLK_state == HIGH) {
+		// if the DT state is HIGH
+		// the encoder is rotating in counter-clockwise direction => decrease the counter
+		if (digitalRead(DT_PIN) == HIGH) {
+			counter--;
+			direction = DIRECTION_CCW;
+		} else {
+			// the encoder is rotating in clockwise direction => increase the counter
+			counter++;
+			direction = DIRECTION_CW;
+		}
+
+// Debugging
+	Serial.print("DIRECTION: ");
+	if (direction == DIRECTION_CW)
+		Serial.print("Clockwise");
+	else
+		Serial.print("Counter-clockwise");
+
+	Serial.print(" | COUNTER: ");
+	Serial.println(counter);
+
+	if (counter < 0)
+		counter = 0;
+	else if (counter > 90)
+		counter = 90;
+
+// Sets the servo angle according to the counter
+//	write.Servo(counter);	// IMPORTANT: Temporary
+}
+
+// Save last CLK state
+	prev_CLK_state = CLK_state;
+}
