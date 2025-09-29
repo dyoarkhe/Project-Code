@@ -1,0 +1,85 @@
+sketch.ino:20:1: error: 'Adafruit_PWNServoDriver' does not name a type; did you mean 'Adafruit_PWMServoDriver'?
+ Adafruit_PWNServoDriver pwm;
+ ^~~~~~~~~~~~~~~~~~~~~~~
+ Adafruit_PWMServoDriver
+sketch.ino: In function 'void setup()':
+sketch.ino:68:2: error: 'pwm' was not declared in this scope
+  pwm.begin();
+  ^~~
+sketch.ino:71:20: error: expected ';' before '<' token
+  for (int i = 0, i < NUM_SERVOS; i++) {
+                    ^
+sketch.ino:71:20: error: expected primary-expression before '<' token
+sketch.ino:23:19: error: expected primary-expression before ';' token
+ #define SERVO_MIN ; // IMPORTANT: Missing value
+                   ^
+sketch.ino:72:31: note: in expansion of macro 'SERVO_MIN'
+   pwm.setPWM(servoPins[i], 0, SERVO_MIN);
+                               ^~~~~~~~~
+sketch.ino:72:40: error: expected primary-expression before ')' token
+   pwm.setPWM(servoPins[i], 0, SERVO_MIN);
+                                        ^
+sketch.ino:91:2: error: 'servo' was not declared in this scope
+  servo.attach(SERVO_PIN);  // IMPORTANT: Modify
+  ^~~~~
+sketch.ino:91:2: note: suggested alternative: 'perror'
+  servo.attach(SERVO_PIN);  // IMPORTANT: Modify
+  ^~~~~
+  perror
+sketch.ino:91:15: error: 'SERVO_PIN' was not declared in this scope
+  servo.attach(SERVO_PIN);  // IMPORTANT: Modify
+               ^~~~~~~~~
+sketch.ino:91:15: note: suggested alternative: 'SERVO_MIN'
+  servo.attach(SERVO_PIN);  // IMPORTANT: Modify
+               ^~~~~~~~~
+               SERVO_MIN
+sketch.ino:95:1: error: expected ';' before '}' token
+ }
+ ^
+sketch.ino: In function 'void loop()':
+sketch.ino:108:20: error: 'tiltY' was not declared in this scope
+  int ServoF = 90 + tiltY + counter;
+                    ^~~~~
+sketch.ino:109:32: error: 'tiltX' was not declared in this scope
+  int ServoL = 90 - tiltY / 2 - tiltX + counter;
+                                ^~~~~
+sketch.ino:27:18: error: expected ')' before ';' token
+ #define SERVO_1 0; // Defines Servo 1; Front
+                  ^
+sketch.ino:112:11: note: in expansion of macro 'SERVO_1'
+  setServo(SERVO_1, ServoF);
+           ^~~~~~~
+sketch.ino:112:18: error: expected primary-expression before ',' token
+  setServo(SERVO_1, ServoF);
+                  ^
+sketch.ino:28:18: error: expected ')' before ';' token
+ #define SERVO_2 1; // Defines Servo 2; Back-Left
+                  ^
+sketch.ino:113:11: note: in expansion of macro 'SERVO_2'
+  setServo(SERVO_2, ServoL);
+           ^~~~~~~
+sketch.ino:113:18: error: expected primary-expression before ',' token
+  setServo(SERVO_2, ServoL);
+                  ^
+sketch.ino:29:18: error: expected ')' before ';' token
+ #define SERVO_3 2; // Defines Servo 3; Back-Right
+                  ^
+sketch.ino:114:11: note: in expansion of macro 'SERVO_3'
+  setServo(SERVO_3, ServoR);
+           ^~~~~~~
+sketch.ino:114:18: error: expected primary-expression before ',' token
+  setServo(SERVO_3, ServoR);
+                  ^
+sketch.ino:116:40: error: 'frontServo' was not declared in this scope
+  Serial.print("Front: "); Serial.print(frontServo);
+                                        ^~~~~~~~~~
+sketch.ino:117:43: error: 'backLServo' was not declared in this scope
+  Serial.print(" | BackL: "); Serial.print(backLServo);
+                                           ^~~~~~~~~~
+sketch.ino:118:43: error: 'backRServo' was not declared in this scope
+  Serial.print(" | BackR: "); Serial.print(backRServo);
+                                           ^~~~~~~~~~
+sketch.ino:119:52: error: 'collectiveOffset' was not declared in this scope
+  Serial.println(" | Collective: "); Serial.println(collectiveOffset);
+                                                    ^~~~~~~~~~~~~~~~
+Error during build: exit status 1
