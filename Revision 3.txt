@@ -1,0 +1,157 @@
+// https://arduinogetstarted.com/tutorials/arduino-joystick
+// https://arduinogetstarted.com/tutorials/arduino-joystick-servo-motor
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder
+// https://arduinogetstarted.com/tutorials/arduino-rotary-encoder-servo-motor
+// https://learn.adafruit.com/16-channel-pwm-servo-driver/library-reference
+// https://adafruit.github.io/Adafruit-PWM-Servo-Driver-Library/html/class_adafruit___p_w_m_servo_driver.html
+
+// Use Cases
+// Use analog input for sensors that provide variable voltage, such as light sensors or potentiometers.
+// Use digital input for devices like buttons or switches.
+// Use analog output (PWM) for controlling brightness or motor speed.
+// Use digital output for turning devices like LEDs on or off.
+
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>  // PCA9685 integration
+#include <ezButton.h>                 // For button input (optional for encoder push)
+
+// >>> Adafruit PCA9685 <<<
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+// Define servo parameters
+#define NUM_SERVOS    3
+#define SERVO_MIN     150   // ~1ms pulse (adjust/calibrate as needed)
+#define SERVO_MAX     600   // ~2ms pulse (adjust/calibrate as needed)
+#define SERVO_DELAY   10    // small delay for smoothness
+
+// Define Servo Channel Assignments (PCA9685 channels)
+#define SERVO_1  0   // Front
+#define SERVO_2  1   // Back-Left
+#define SERVO_3  2   // Back-Right
+
+int servoPins[NUM_SERVOS] = { SERVO_1, SERVO_2, SERVO_3 };
+
+
+// >>> Joystick Module <<<
+#define VRX_PIN  A0  // X-axis
+#define VRY_PIN  A1  // Y-axis
+
+
+// >>> Rotary Encoder <<<
+#define CLK_PIN  2
+#define DT_PIN   3
+#define SW_PIN   4   // Button (not used here, but reserved)
+#define DIRECTION_CW   0
+#define DIRECTION_CCW  1
+
+int counter = 0;               // Collective offset
+int direction = DIRECTION_CW;
+int CLK_state;
+int prev_CLK_state;
+
+
+// ------------------------------------------------------------
+// Convert angle (0–180°) to PCA9685 pulse length (SERVO_MIN–MAX)
+// ------------------------------------------------------------
+int angleToPulse(int angle) {
+  int pulse = map(angle, 0, 180, SERVO_MIN, SERVO_MAX);
+  return pulse;
+}
+
+// ------------------------------------------------------------
+// Set servo by PCA9685 channel + angle
+// ------------------------------------------------------------
+void setServo(int channel, int angle) {
+  angle = constrain(angle, 0, 180);
+  int pulse = angleToPulse(angle);
+  pwm.setPWM(channel, 0, pulse);
+}
+
+
+// ============================================================
+// SETUP
+// ============================================================
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Swashplate Servo Control");
+
+  // >>> PCA9685
+  pwm.begin();
+  pwm.setPWMFreq(50);  // Standard 50Hz for servos
+
+  // Initialize all servos to center position (90°)
+  for (int i = 0; i < NUM_SERVOS; i++) {
+    setServo(servoPins[i], 90);
+    delay(SERVO_DELAY);
+  }
+
+  // >>> Rotary Encoder
+  pinMode(CLK_PIN, INPUT);
+  pinMode(DT_PIN, INPUT);
+  prev_CLK_state = digitalRead(CLK_PIN);
+}
+
+
+// ============================================================
+// LOOP
+// ============================================================
+void loop() {
+  delay(20);
+
+  // -------------------------------
+  // >>> Joystick Input
+  // -------------------------------
+  int VRX = analogRead(VRX_PIN);
+  int VRY = analogRead(VRY_PIN);
+
+  // Convert joystick (0–1023) to tilt range (-30 to +30 degrees)
+  int tiltX = map(VRX, 0, 1023, -30, 30);
+  int tiltY = map(VRY, 0, 1023, -30, 30);
+
+  // -------------------------------
+  // >>> Swashplate Mixing
+  // -------------------------------
+  // Base angle is 90°, add collective from rotary encoder
+  int ServoF = 90 + tiltY + counter;                  // Front
+  int ServoL = 90 - (tiltY / 2) - tiltX + counter;    // Back-Left
+  int ServoR = 90 - (tiltY / 2) + tiltX + counter;    // Back-Right
+
+  // Apply to servos
+  setServo(SERVO_1, ServoF);
+  setServo(SERVO_2, ServoL);
+  setServo(SERVO_3, ServoR);
+
+  // Debugging output
+  Serial.print("Front: "); Serial.print(ServoF);
+  Serial.print(" | BackL: "); Serial.print(ServoL);
+  Serial.print(" | BackR: "); Serial.print(ServoR);
+  Serial.print(" | Collective: "); Serial.println(counter);
+
+
+  // -------------------------------
+  // >>> Rotary Encoder Input
+  // -------------------------------
+  CLK_state = digitalRead(CLK_PIN);
+
+  // Detect rotation on rising edge of CLK
+  if (CLK_state != prev_CLK_state && CLK_state == HIGH) {
+    if (digitalRead(DT_PIN) == HIGH) {
+      counter--;  // CCW
+      direction = DIRECTION_CCW;
+    } else {
+      counter++;  // CW
+      direction = DIRECTION_CW;
+    }
+
+    // Clamp collective range between 0 and 90
+    if (counter < 0) counter = 0;
+    if (counter > 90) counter = 90;
+
+    Serial.print("Direction: ");
+    Serial.print(direction == DIRECTION_CW ? "CW" : "CCW");
+    Serial.print(" | Collective Offset: ");
+    Serial.println(counter);
+  }
+
+  prev_CLK_state = CLK_state;
+}
